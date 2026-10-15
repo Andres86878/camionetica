@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camionetica · Chofer</title>
+<meta name="theme-color" content="#010705">
+<link rel="manifest" href="/manifest.json">
+<style>
+:root{--bg:#010705;--surface:rgba(4,25,18,.88);--primary:#059669;--accent:#10B981;--glow:rgba(16,185,129,.4);--muted:#6EE7B7;--border:rgba(16,185,129,.25);--danger:#F87171;--amber:#FBBF24}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(circle at 50% 0%,#04291D 0%,#010705 80%) fixed,var(--bg);color:#fff;min-height:100vh;display:flex;justify-content:center;padding:20px 16px 40px}
+.wrap{width:100%;max-width:440px;display:flex;flex-direction:column;gap:16px}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-radius:22px;border:1px solid var(--border);background:rgba(4,25,18,.9)}
+.brand{display:flex;gap:12px;align-items:center}.logo{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:linear-gradient(135deg,#34D399,#059669);box-shadow:0 0 25px var(--glow)}
+.brand b{display:block;font-size:17px;letter-spacing:1.5px}.brand span{font-size:9px;letter-spacing:3px;color:var(--accent);font-weight:800}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:22px;box-shadow:0 30px 60px -15px rgba(0,0,0,.8)}
+label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px;letter-spacing:.5px}
+input{width:100%;padding:16px;border-radius:14px;border:1px solid var(--border);background:rgba(1,7,5,.6);color:#fff;font-size:16px;margin-bottom:14px;text-transform:uppercase}
+.btn{width:100%;padding:18px;border:0;border-radius:16px;font-weight:900;font-size:16px;cursor:pointer;background:linear-gradient(135deg,#34D399,#059669);color:#010705;box-shadow:0 10px 30px var(--glow)}
+.btn.stop{background:rgba(248,113,113,.15);color:var(--danger);box-shadow:none;border:1px solid rgba(248,113,113,.4)}
+.msg{min-height:18px;margin-top:12px;text-align:center;font-weight:800;font-size:13px;color:var(--danger)}
+.hidden{display:none!important}
+.unit{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.unit h2{font-size:26px;letter-spacing:-.5px}.unit p{color:var(--muted);font-weight:700;font-size:13px;margin-top:2px}
+.status{display:flex;align-items:center;gap:8px;font-weight:900;font-size:12px;padding:7px 12px;border-radius:20px;border:1px solid var(--border);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:#6b7280}
+.on .dot{background:var(--accent);box-shadow:0 0 10px var(--accent);animation:p 1.4s infinite}.on{color:var(--accent)}
+.warn .dot{background:var(--amber)}.warn{color:var(--amber)}
+@keyframes p{50%{transform:scale(1.6)}}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{padding:18px;border-radius:20px;background:rgba(16,185,129,.07);border:1px solid var(--border)}
+.stat span{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:1px}.stat b{display:block;font-size:34px;margin-top:4px;letter-spacing:-1px}
+.gps{font-size:12px;color:var(--muted);font-weight:700;margin-top:12px;text-align:center}
+.pago{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(16,185,129,.12);font-size:14px}
+.pago:last-child{border:0}.pago small{color:var(--muted);font-weight:700}
+.flash{position:fixed;left:50%;top:24px;transform:translate(-50%,-140%);background:var(--primary);color:#fff;font-weight:900;padding:16px 26px;border-radius:18px;box-shadow:0 20px 40px rgba(0,0,0,.6);transition:transform .35s cubic-bezier(.16,1,.3,1);z-index:10;font-size:17px}
+.flash.on{transform:translate(-50%,0)}
+.qrbox{display:flex;gap:16px;align-items:center}
+#qr{background:#fff;padding:10px;border-radius:14px}
+.link{background:none;border:0;color:var(--muted);font-weight:800;text-decoration:underline;cursor:pointer;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="brand"><div class="logo">🚐</div><div><b>CAMIONETICA</b><span>PANEL DEL CHOFER</span></div></div></header>
+
+  <!-- Acceso -->
+  <div id="vLogin" class="card">
+    <h2 style="margin-bottom:6px">Inicia tu turno</h2>
+    <p style="color:var(--muted);font-weight:700;font-size:13px;margin-bottom:18px">Entra con el número de tu unidad o la placa, y tu clave.</p>
+    <label>Unidad o placa</label><input id="unidad" placeholder="BUS-001 o AB123CD" autocomplete="username">
+    <label>Clave</label><input id="clave" type="password" inputmode="numeric" maxlength="6" placeholder="••••" autocomplete="current-password">
+    <button class="btn" onclick="entrar()">Entrar</button>
+    <p id="loginMsg" class="msg"></p>
+    <p style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px;opacity:.8">Prueba: BUS-001 · clave 1234</p>
+  </div>
+
+  <!-- Panel -->
+  <div id="vPanel" class="hidden" style="display:flex;flex-direction:column;gap:16px">
+    <div class="card">
+      <div class="unit">
+        <div><h2 id="uId">BUS-000</h2><p id="uRuta">--</p><p id="uChofer" style="color:#fff;opacity:.7"></p></div>
+        <div id="estado" class="status"><span class="dot"></span><span id="estadoTxt">Fuera de turno</span></div>
+      </div>
+      <button id="btnTurno" class="btn" style="margin-top:18px" onclick="alternarTurno()">▶ Iniciar turno y compartir ubicación</button>
+      <p id="gpsTxt" class="gps">Tu ubicación solo se comparte mientras el turno está activo.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span>PASAJEROS HOY</span><b id="sPas">0</b></div>
+      <div class="stat"><span>RECAUDADO HOY</span><b id="sRec">0</b></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:8px">Últimos pagos</h3>
+      <div id="lista"><p style="color:var(--muted);font-weight:700;font-size:14px">Esperando pasajeros...</p></div>
+    </div>
+
+    <div class="card">
+      <div class="qrbox"><div id="qr"></div><div><h3>QR de tu unidad</h3><p style="color:var(--muted);font-size:13px;font-weight:700;margin-top:4px">Código: <b id="qrCode" style="color:#fff"></b></p><p style="color:var(--muted);font-size:12px;margin-top:6px">Los pasajeros escanean este código para pagar.</p></div></div>
+    </div>
+    <button class="link" onclick="salir()">Cerrar sesión</button>
+  </div>
+</div>
+<div id="flash" class="flash">✅ ¡Nuevo pago recibido!</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+let TOKEN = localStorage.getItem('cmt_chofer') || '';
+let enTurno = false, watchId = null, ultimoEnvio = 0, ultimaPos = null, totalPrevio = null, wakeLock = null;
+
+async function api(ruta, cuerpo) {
+  const opt = { headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN } };
+  if (cuerpo) { opt.method = 'POST'; opt.body = JSON.stringify(cuerpo); }
+  const r = await fetch(ruta, opt); const d = await r.json();
+  if (r.status === 401) { salir(true); throw new Error('sesion'); }
+  return d;
+}
+
+async function entrar() {
+  const m = document.getElementById('loginMsg'); m.style.color = '#6EE7B7'; m.innerText = 'Verificando...';
+  try {
+    const d = await api('/api/chofer/login', { unidad: unidad.value, clave: clave.value });
+    if (!d.exito) { m.style.color = '#F87171'; m.innerText = d.mensaje; return; }
+    TOKEN = d.token; localStorage.setItem('cmt_chofer', TOKEN); clave.value = ''; m.innerText = '';
+    mostrarPanel();
+  } catch (e) { if (e.message !== 'sesion') { m.style.color = '#F87171'; m.innerText = 'Sin conexión con el servidor.'; } }
+}
+
+function mostrarPanel() {
+  vLogin.classList.add('hidden'); vPanel.classList.remove('hidden');
+  refrescar(); setInterval(refrescar, 3000);
+}
+
+function salir(silencioso) {
+  detenerGPS(); TOKEN = ''; localStorage.removeItem('cmt_chofer');
+  vPanel.classList.add('hidden'); vLogin.classList.remove('hidden');
+}
+
+let qrPintado = false;
+async function refrescar() {
+  if (!TOKEN) return;
+  try {
+    const d = await api('/api/chofer/resumen');
+    uId.innerText = d.bus.id + ' · ' + d.bus.placa; uRuta.innerText = d.bus.ruta; uChofer.innerText = d.chofer;
+    sPas.innerText = d.pasajerosHoy; sRec.innerText = parseFloat(d.recaudadoHoy).toFixed(0) + ' Bs';
+    qrCode.innerText = d.qr_codigo;
+    if (!qrPintado && window.QRCode) {
+      new QRCode(document.getElementById('qr'), { text: 'camionetica:' + d.qr_codigo, width: 110, height: 110, correctLevel: QRCode.CorrectLevel.M });
+      qrPintado = true;
+    }
+    lista.innerHTML = d.ultimos.length ? d.ultimos.map(p => `<div class="pago"><span>👤 ${p.pasajero}<br><small>${new Date(p.creado_en).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}</small></span><b>+${p.monto} Bs</b></div>`).join('')
+      : '<p style="color:var(--muted);font-weight:700;font-size:14px">Esperando pasajeros...</p>';
+    if (totalPrevio !== null && d.pasajerosHoy > totalPrevio) avisarPago();
+    totalPrevio = d.pasajerosHoy;
+  } catch (e) { }
+}
+
+function avisarPago() {
+  flash.classList.add('on'); setTimeout(() => flash.classList.remove('on'), 3000);
+  if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+  try { const c = new AudioContext(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; o.connect(g); g.connect(c.destination); g.gain.setValueAtTime(.2, c.currentTime); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .4); o.start(); o.stop(c.currentTime + .4); } catch (e) { }
+}
+
+function pintarEstado(clase, texto) { estado.className = 'status ' + clase; estadoTxt.innerText = texto; }
+
+async function alternarTurno() {
+  if (enTurno) {
+    detenerGPS(); await api('/api/chofer/turno', { activo: false }).catch(() => {});
+    return;
+  }
+  if (!('geolocation' in navigator)) { gpsTxt.innerText = 'Este teléfono no tiene GPS disponible.'; return; }
+  enTurno = true;
+  btnTurno.innerText = '■ Terminar turno'; btnTurno.classList.add('stop');
+  pintarEstado('warn', 'Buscando GPS...');
+  await api('/api/chofer/turno', { activo: true }).catch(() => {});
+  watchId = navigator.geolocation.watchPosition(enviarPos, errorGPS, { enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 });
+  // Si el carro está parado, igual reporta cada 10 s para seguir visible en el mapa
+  window._latido = setInterval(() => { if (ultimaPos && Date.now() - ultimoEnvio > 10000) enviarPos(ultimaPos, true); }, 5000);
+  try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { }
+}
+
+async function enviarPos(pos, forzar) {
+  ultimaPos = pos;
+  if (!forzar && Date.now() - ultimoEnvio < 5000) return;  // máximo cada 5 s
+  ultimoEnvio = Date.now();
+  try {
+    await api('/api/chofer/gps', { lat: pos.coords.latitude, lng: pos.coords.longitude });
+    pintarEstado('on', 'En ruta');
+    gpsTxt.innerText = `📍 Ubicación enviada ${new Date().toLocaleTimeString('es-VE')} · precisión ${Math.round(pos.coords.accuracy)} m`;
+  } catch (e) { pintarEstado('warn', 'Sin conexión'); }
+}
+
+function errorGPS(err) {
+  pintarEstado('warn', 'Sin GPS');
+  gpsTxt.innerText = err.code === 1 ? 'Permite el acceso a la ubicación para compartir tu ruta.' : 'No se pudo leer el GPS. Revisa que esté encendido.';
+}
+
+function detenerGPS() {
+  enTurno = false;
+  if (watchId !== null) navigator.geolocation.clearWatch(watchId); watchId = null;
+  clearInterval(window._latido);
+  if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+  btnTurno.innerText = '▶ Iniciar turno y compartir ubicación'; btnTurno.classList.remove('stop');
+  pintarEstado('', 'Fuera de turno');
+  gpsTxt.innerText = 'Tu ubicación solo se comparte mientras el turno está activo.';
+}
+
+if (TOKEN) mostrarPanel();
+</script>
+</body>
+</html>
